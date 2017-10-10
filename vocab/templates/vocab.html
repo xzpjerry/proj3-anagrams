@@ -89,6 +89,7 @@
 </div></div>
 
 <p id="response"> </p>  <!-- JavaScript will insert text here -->
+<p id="play_again"> </p>
 
 <br />
 
@@ -138,9 +139,12 @@ $("#attempt").keyup(function(event) {
               function(data) {
                 rsl = data.result
                 console.log("rsl_matches: " + rsl.matches)
-                if (rsl.status_num === 0 && rsl.matches.length === 3) {
+                if (rsl.status_num === 0 && rsl.matches.length === rsl.target_count) {
                    $("#response").html("Yeah");
                    $("#attempt").val("");
+                   document.body.innerHTML += "<h1>That was awesome</h1>";
+                   document.body.innerHTML += "<br />";
+                   document.body.innerHTML += "<p>Let's <a href=\"/index\">do it again</a></p>";
                 }
                 else if (rsl.status_num === 0 || rsl.status_num === 1){
                    $("#response").html("You already found " + rsl.matches);

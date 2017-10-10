@@ -100,7 +100,7 @@ def check():
 
     status_num = -1
     rslt = {"in_jumble": in_jumble, "matched": matched,
-            "text": text, "jumble": jumble, 'matches' : matches}
+            "text": text, "jumble": jumble, 'matches' : matches, 'target_count' : flask.session["target_count"]}
 
     # Respond appropriately
     # status_num 0, 1, 2, 3
@@ -127,11 +127,11 @@ def check():
     app.logger.debug("Status_num %d", rslt['status_num'])
     
     # Choose page:  Solved enough, or keep going?
-    if len(matches) >= flask.session["target_count"]:
+    if len(rslt['matches']) >= flask.session["target_count"]:
         flask.render_template('success.html')
         # return flask.redirect(flask.url_for("success"))
-    else:
-        flask.render_template('vocab.html')
+    #else:
+     #   flask.render_template('vocab.html')
         # return flask.redirect(flask.url_for("keep_going"))
     return flask.jsonify(result=rslt)
 
