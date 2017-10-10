@@ -73,6 +73,7 @@ def success():
 #   a JSON request handler
 #######################
 
+
 @app.route("/_check")
 def check():
     """
@@ -96,38 +97,42 @@ def check():
     # Is it good?
     in_jumble = LetterBag(jumble).contains(text)
     matched = WORDS.has(text)
+
     status_num = -1
-    rslt = {"in_jumble" : in_jumble, "matched" : matched, "text" : text, "jumble" : jumble}
+    rslt = {"in_jumble": in_jumble, "matched": matched,
+            "text": text, "jumble": jumble, 'matches' : matches}
 
     # Respond appropriately
     # status_num 0, 1, 2, 3
-    if matched and in_jumble: #and not (text in matches):
+    if matched and in_jumble and not (text in rslt['matches']):
         # Cool, they found a new word
-        #matches.append(text)
-        #flask.session["matches"] = matches
+        rslt['matches'].append(text)
+        flask.session["matches"] = rslt['matches']
         status_num = 0
     elif text in matches:
         status_num = 1
-        #flask.flash(te {}".format(text))
+        # flask.flash(te {}".format(text))
     elif not matched:
         status_num = 2
         #flask.flash("{} isn't in the list of words".format(text))
     elif not in_jumble:
         status_num = 3
-        #flask.flash(
-         #   '"{}" can\'t be made from the letters {}'.format(text, jumble))
+        # flask.flash(
+        #   '"{}" can\'t be made from the letters {}'.format(text, jumble))
     else:
         app.logger.debug("This case shouldn't happen!")
-        assert False  # Raises AssertionError
+        assert False  # Rm.aises AssertionError
 
     rslt['status_num'] = status_num
+    app.logger.debug("Status_num %d", rslt['status_num'])
+    
     # Choose page:  Solved enough, or keep going?
     if len(matches) >= flask.session["target_count"]:
         flask.render_template('success.html')
-        #return flask.redirect(flask.url_for("success"))
+        # return flask.redirect(flask.url_for("success"))
     else:
         flask.render_template('vocab.html')
-        #return flask.redirect(flask.url_for("keep_going"))
+        # return flask.redirect(flask.url_for("keep_going"))
     return flask.jsonify(result=rslt)
 
 

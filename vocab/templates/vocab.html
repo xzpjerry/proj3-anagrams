@@ -122,6 +122,7 @@ $("#entry").submit( function(event) {
 
 $("#attempt").keyup(function(event) {
    var txt = $("#attempt").val();  // Current content of the input field
+   if (txt.length === 0) { return }
    var keycode = event.which;      // They key that just went up
    var letter = String.fromCharCode(keycode);
 
@@ -131,18 +132,19 @@ $("#attempt").keyup(function(event) {
    // upper and lower case comes from state of shift key + key code,
    // so ignoring the shift key we get only the upper case letters.
 
-   if (! "ABCDEFGHIJKLMNOPQRSTUVWXYZ".includes(letter)) { return }
+   if (! "ABCDEFGHIJKLMNOPQRSTUVWXYZ".includes(letter)) { return } 
 
    $.getJSON( "/_check", { text: txt }, 
               function(data) {
                 rsl = data.result
-                console.log("status_num: " + rsl.status_num)
-                if (rsl.status_num === 0) {
+                console.log("rsl_matches: " + rsl.matches)
+                if (rsl.status_num === 0 && rsl.matches.length === 3) {
                    $("#response").html("Yeah");
                    $("#attempt").val("");
                 }
-                else if (rsl.status_num === 1){
-                   $("#response").html("You already found " + rsl.text);
+                else if (rsl.status_num === 0 || rsl.status_num === 1){
+                   $("#response").html("You already found " + rsl.matches);
+                   $("#attempt").val("");
                 }
                 else if (rsl.status_num === 2){
                    $("#response").html( rsl.text + " isn't in the list of words");
