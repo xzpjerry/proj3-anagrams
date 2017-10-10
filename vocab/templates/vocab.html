@@ -78,18 +78,22 @@
   </div> <!-- col -->
 </div> <!-- row -->
 <br />
+
 <div class="row">
   <div class="col-xs-6 text-center">
-  <form id="entry" method="POST" action="/_check">
+  <form id="entry">
     <label for="attempt">Word:</label>
     <input id="attempt" name="attempt" type="text" width="15"
       autocomplete="off"  autofocus />
-    <input type="submit" name="try" />
   </form>
 </div></div>
 
+<p id="response"> </p>  <!-- JavaScript will insert text here -->
+
 <br />
 
+
+<!--
 {% if session.matches|length is not equalto 0  %}
 <h2>You found </h2>
 <p id="results">
@@ -102,14 +106,57 @@
 
 {% with messages = get_flashed_messages() %}
   {% if messages %}
-    <!-- Mismatch, already found, etc. "flashed" from Python -->
+    
     {% for message in messages %}
       <p class="message">{{ message }}</p>
     {% endfor %}
   {% endif %}
-{% endwith %}
+{% endwith %} 
+-->
+<script>
 
+// Suppress normal form submission
+$("#entry").submit( function(event) {
+   event.preventDefault();
+  });
 
+$("#attempt").keyup(function(event) {
+   var txt = $("#attempt").val();  // Current content of the input field
+   var keycode = event.which;      // They key that just went up
+   var letter = String.fromCharCode(keycode);
+
+   // That letter might not be a letter ... it could be the
+   // the backspace key, or even the shift key, because 'keyup'
+   // catches all kinds of keys.  (Also, the difference between
+   // upper and lower case comes from state of shift key + key code,
+   // so ignoring the shift key we get only the upper case letters.
+
+   if (! "ABCDEFGHIJKLMNOPQRSTUVWXYZ".includes(letter)) { return }
+
+   $.getJSON( "/_check", { text: txt }, 
+              function(data) {
+                rsl = data.result
+                console.log("status_num: " + rsl.status_num)
+                if (rsl.status_num === 0) {
+                   $("#response").html("Yeah");
+                   $("#attempt").val("");
+                }
+                else if (rsl.status_num === 1){
+                   $("#response").html("You already found " + rsl.text);
+                }
+                else if (rsl.status_num === 2){
+                   $("#response").html( rsl.text + " isn't in the list of words");
+                }
+                else if (rsl.status_num === 3){
+                   $("#response").html( rsl.text + "can't be made from the letters " + rsl.jumble);
+                }
+                else {
+                  $("#response").html("Something wrong ");
+                }
+               }
+           );
+   });
+</script>
 
  </div> <!-- container -->
 </body> </html>

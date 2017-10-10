@@ -100,7 +100,7 @@ $("#attempt").keyup(function(event) {
                 } else {
                    $("#response").append(txt.length + " "); 
                 }
-                showTiles(txt);
+                //showTiles(txt);
                }
            );
    });
@@ -113,6 +113,7 @@ $("#attempt").keyup(function(event) {
 // files so that http requests are sent only the first time each
 // element is encountered. 
 //
+/*
 function showTiles(text) {
    text = text.toUpperCase();  // tiles are letter-A.png, etc.
    tiles_html = "";  // Build up the html text of links
@@ -128,7 +129,7 @@ function showTiles(text) {
     }
     $("#tiles").html(tiles_html);
     // alert("Inserted html: " + tiles_html);
-}
+}*/
 </script>
 
 

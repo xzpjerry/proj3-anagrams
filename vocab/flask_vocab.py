@@ -73,8 +73,7 @@ def success():
 #   a JSON request handler
 #######################
 
-
-@app.route("/_check", methods=["POST"])
+@app.route("/_check")
 def check():
     """
     User has submitted the form with a word ('attempt')
@@ -87,35 +86,50 @@ def check():
     app.logger.debug("Entering check")
 
     # The data we need, from form and from cookie
-    text = flask.request.form["attempt"]
+    #text = flask.request.form["attempt"]
     jumble = flask.session["jumble"]
     matches = flask.session.get("matches", [])  # Default to empty list
+
+    # Get data from request.args
+    text = flask.request.args.get("text", type=str)
 
     # Is it good?
     in_jumble = LetterBag(jumble).contains(text)
     matched = WORDS.has(text)
+    status_num = -1
+    rslt = {"in_jumble" : in_jumble, "matched" : matched, "text" : text, "jumble" : jumble}
 
     # Respond appropriately
-    if matched and in_jumble and not (text in matches):
+    # status_num 0, 1, 2, 3
+    if matched and in_jumble: #and not (text in matches):
         # Cool, they found a new word
-        matches.append(text)
-        flask.session["matches"] = matches
+        #matches.append(text)
+        #flask.session["matches"] = matches
+        status_num = 0
     elif text in matches:
-        flask.flash("You already found {}".format(text))
+        status_num = 1
+        #flask.flash(te {}".format(text))
     elif not matched:
-        flask.flash("{} isn't in the list of words".format(text))
+        status_num = 2
+        #flask.flash("{} isn't in the list of words".format(text))
     elif not in_jumble:
-        flask.flash(
-            '"{}" can\'t be made from the letters {}'.format(text, jumble))
+        status_num = 3
+        #flask.flash(
+         #   '"{}" can\'t be made from the letters {}'.format(text, jumble))
     else:
         app.logger.debug("This case shouldn't happen!")
         assert False  # Raises AssertionError
 
+    rslt['status_num'] = status_num
     # Choose page:  Solved enough, or keep going?
     if len(matches) >= flask.session["target_count"]:
-       return flask.redirect(flask.url_for("success"))
+        flask.render_template('success.html')
+        #return flask.redirect(flask.url_for("success"))
     else:
-       return flask.redirect(flask.url_for("keep_going"))
+        flask.render_template('vocab.html')
+        #return flask.redirect(flask.url_for("keep_going"))
+    return flask.jsonify(result=rslt)
+
 
 ###############
 # AJAX request handlers
