@@ -79,6 +79,8 @@
 </div> <!-- row -->
 <br />
 
+<!-- Changes start from here -->
+
 <div class="row">
   <div class="col-xs-6 text-center">
   <form id="entry">
@@ -89,31 +91,9 @@
 </div></div>
 
 <p id="response"> </p>  <!-- JavaScript will insert text here -->
-<p id="play_again"> </p>
 
 <br />
 
-
-<!--
-{% if session.matches|length is not equalto 0  %}
-<h2>You found </h2>
-<p id="results">
-  {% for match in session.matches %}
-  {{ match }} 
-  {% endfor %}
-</p>
-{% endif %}
-
-
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    
-    {% for message in messages %}
-      <p class="message">{{ message }}</p>
-    {% endfor %}
-  {% endif %}
-{% endwith %} 
--->
 <script>
 
 // Suppress normal form submission
@@ -123,7 +103,8 @@ $("#entry").submit( function(event) {
 
 $("#attempt").keyup(function(event) {
    var txt = $("#attempt").val();  // Current content of the input field
-   if (txt.length === 0) { return }
+   if (txt.length === 0) { return } // Save reasources
+
    var keycode = event.which;      // They key that just went up
    var letter = String.fromCharCode(keycode);
 
@@ -139,8 +120,9 @@ $("#attempt").keyup(function(event) {
               function(data) {
                 rsl = data.result
                 console.log("rsl_matches: " + rsl.matches)
+
                 if (rsl.status_num === 0 && rsl.matches.length === rsl.target_count) {
-                   $("#response").html("Yeah");
+                   $("#response").html("");
                    $("#attempt").val("");
                    document.body.innerHTML += "<h1>That was awesome</h1>";
                    document.body.innerHTML += "<br />";
@@ -154,10 +136,10 @@ $("#attempt").keyup(function(event) {
                    $("#response").html( rsl.text + " isn't in the list of words");
                 }
                 else if (rsl.status_num === 3){
-                   $("#response").html( rsl.text + "can't be made from the letters " + rsl.jumble);
+                   $("#response").html( rsl.text + " can't be made from the letters " + rsl.jumble);
                 }
                 else {
-                  $("#response").html("Something wrong ");
+                  $("#response").html("Something wrong!");
                 }
                }
            );

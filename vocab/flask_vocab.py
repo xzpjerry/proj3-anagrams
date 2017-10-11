@@ -52,20 +52,6 @@ def index():
     return flask.render_template('vocab.html')
 
 
-@app.route("/keep_going")
-def keep_going():
-    """
-    After initial use of index, we keep the same scrambled
-    word and try to get more matches
-    """
-    flask.g.vocab = WORDS.as_list()
-    return flask.render_template('vocab.html')
-
-
-@app.route("/success")
-def success():
-    return flask.render_template('success.html')
-
 #######################
 # Form handler.
 # CIS 322 note:
@@ -87,7 +73,6 @@ def check():
     app.logger.debug("Entering check")
 
     # The data we need, from form and from cookie
-    #text = flask.request.form["attempt"]
     jumble = flask.session["jumble"]
     matches = flask.session.get("matches", [])  # Default to empty list
 
@@ -98,41 +83,38 @@ def check():
     in_jumble = LetterBag(jumble).contains(text)
     matched = WORDS.has(text)
 
+    # Using status_num to represent how's the user done with the gussing
     status_num = -1
-    rslt = {"in_jumble": in_jumble, "matched": matched,
-            "text": text, "jumble": jumble, 'matches' : matches, 'target_count' : flask.session["target_count"]}
+    rslt = {"text": text, 'matches': matches,
+            'target_count': flask.session["target_count"]}
 
-    # Respond appropriately
+    # Respond appropriately with
     # status_num 0, 1, 2, 3
+    # 0, a new word is found
     if matched and in_jumble and not (text in rslt['matches']):
         # Cool, they found a new word
         rslt['matches'].append(text)
         flask.session["matches"] = rslt['matches']
         status_num = 0
+
+    # 1, input a repeated word
     elif text in matches:
         status_num = 1
-        # flask.flash(te {}".format(text))
+
+    # 2, input a word that isn't in the list
     elif not matched:
         status_num = 2
-        #flask.flash("{} isn't in the list of words".format(text))
+
+    # 3, input a word that is in the list but cannot be made
     elif not in_jumble:
         status_num = 3
-        # flask.flash(
-        #   '"{}" can\'t be made from the letters {}'.format(text, jumble))
     else:
         app.logger.debug("This case shouldn't happen!")
         assert False  # Rm.aises AssertionError
 
     rslt['status_num'] = status_num
     app.logger.debug("Status_num %d", rslt['status_num'])
-    
-    # Choose page:  Solved enough, or keep going?
-    if len(rslt['matches']) >= flask.session["target_count"]:
-        flask.render_template('success.html')
-        # return flask.redirect(flask.url_for("success"))
-    #else:
-     #   flask.render_template('vocab.html')
-        # return flask.redirect(flask.url_for("keep_going"))
+
     return flask.jsonify(result=rslt)
 
 
