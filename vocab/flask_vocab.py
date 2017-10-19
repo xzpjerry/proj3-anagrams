@@ -57,12 +57,28 @@ def index():
 # CIS 322 note:
 #   You'll need to change this to a
 #   a JSON request handler
+
+# Done!
 #######################
 
+# Add parameters just for the test purpose
+def repeated(text, matches):
+    return (text in matches)
+
+def in_jumble(text, jumble):
+    return LetterBag(jumble).contains(text)
+
+def matched(text, WORDS = WORDS):
+    return WORDS.has(text)
+
+def find_new_word(text, jumble, WORDS, matches):
+    return matched(text, WORDS) and in_jumble(text, jumble) and not repeated(text, matches)
 
 @app.route("/_check")
 def check():
     """
+    () -> {"text":string, "matches":[], "target_count": int, "jumble": []}
+
     User has submitted the form with a word ('attempt')
     that should be formed from the jumble and on the
     vocabulary list.  We respond depending on whether
@@ -78,42 +94,37 @@ def check():
 
     # Get data from request.args
     text = flask.request.args.get("text", type=str)
-
-    # Is it good?
-    in_jumble = LetterBag(jumble).contains(text)
-    matched = WORDS.has(text)
-
-    # Using status_num to represent how's the user done with the gussing
-    status_num = -1
     rslt = {"text": text, 'matches': matches,
-            'target_count': flask.session["target_count"]}
+            'target_count': flask.session["target_count"], "jumble": jumble}
 
-    # Respond appropriately with
-    # status_num 0, 1, 2, 3
-    # 0, a new word is found
-    if matched and in_jumble and not (text in rslt['matches']):
-        # Cool, they found a new word
-        rslt['matches'].append(text)
-        flask.session["matches"] = rslt['matches']
-        status_num = 0
+    def matcher():
+        '''
+        (bool, bool) -> int
 
-    # 1, input a repeated word
-    elif text in matches:
-        status_num = 1
+        A func for examining user's performance 
+        '''
+        if find_new_word(text, jumble, WORDS, matches):
+            # Cool, they found a new word
+            rslt['matches'].append(text)
+            flask.session["matches"] = rslt['matches']
+            return 0
 
-    # 2, input a word that isn't in the list
-    elif not matched:
-        status_num = 2
+        # input a repeated word
+        elif repeated(text, matches):
+            return 1
 
-    # 3, input a word that is in the list but cannot be made
-    elif not in_jumble:
-        status_num = 3
-    else:
-        app.logger.debug("This case shouldn't happen!")
-        assert False  # Rm.aises AssertionError
+        # input a word that isn't in the list
+        elif not matched(text):
+            return 2
 
-    rslt['status_num'] = status_num
-    app.logger.debug("Status_num %d", rslt['status_num'])
+        # input a word that is in the list but cannot be made
+        elif not in_jumble(text, jumble):
+            return 3
+        else:
+            app.logger.debug("This case shouldn't happen!")
+            assert False  # Rm.aises AssertionError
+
+    rslt['status_num'] = matcher()
 
     return flask.jsonify(result=rslt)
 

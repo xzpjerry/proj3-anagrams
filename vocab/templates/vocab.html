@@ -121,23 +121,33 @@ $("#attempt").keyup(function(event) {
                 rsl = data.result
                 console.log("rsl_matches: " + rsl.matches)
 
-                if (rsl.status_num === 0 && rsl.matches.length === rsl.target_count) {
-                   $("#response").html("");
-                   $("#attempt").val("");
-                   document.body.innerHTML += "<h1>That was awesome</h1>";
-                   document.body.innerHTML += "<br />";
-                   document.body.innerHTML += "<p>Let's <a href=\"/index\">do it again</a></p>";
+                if (rsl.status_num === 0){
+                  $("#attempt").val("");
+
+                  if(rsl.matches.length === rsl.target_count) {
+                     $("#response").html("");
+                     document.body.innerHTML += "<h1>That was awesome</h1>";
+                     document.body.innerHTML += "<br />";
+                     document.body.innerHTML += "<p>Let's <a href=\"/\">do it again</a></p>";
+                  }
+
+                  else {
+                    $("#response").html("You already found " + rsl.matches);
+                  }
                 }
-                else if (rsl.status_num === 0 || rsl.status_num === 1){
-                   $("#response").html("You already found " + rsl.matches);
-                   $("#attempt").val("");
+
+                else if (rsl.status_num === 1){
+                   $("#response").html("Repeated. You already found " + rsl.matches);
                 }
+
                 else if (rsl.status_num === 2){
                    $("#response").html( rsl.text + " isn't in the list of words");
                 }
+
                 else if (rsl.status_num === 3){
                    $("#response").html( rsl.text + " can't be made from the letters " + rsl.jumble);
                 }
+
                 else {
                   $("#response").html("Something wrong!");
                 }
